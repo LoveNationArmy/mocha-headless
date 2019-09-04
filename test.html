@@ -1,0 +1,24 @@
+<!doctype>
+<html>
+  <head>
+    <title>Test</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="./node_modules/mocha/mocha.css" />
+    <script type="module" src="./node_modules/mocha/mocha.js"></script>
+    <script type="module" src="./node_modules/chai/chai.js"></script>
+  </head>
+  <body>
+    <div id="mocha"></div>
+
+    <script type="module">
+      window.expect = chai.expect
+      window.assert = chai.assert
+    </script>
+
+    {test}
+
+    <script type="module">
+      mocha.run()
+    </script>
+  </body>
+</html>
