@@ -1,6 +1,6 @@
 {
   "name": "mocha-headless",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "cli tool to run mocha tests in chrome headless browser",
   "bin": "mocha-headless.js",
   "scripts": {
@@ -13,8 +13,7 @@
     "extatic": "^4.1.3",
     "glob": "^7.1.4",
     "mocha": "^6.2.0",
-    "mocha-chrome": "^2.0.0",
-    "static-server": "^2.2.1"
+    "mocha-chrome": "^2.0.0"
   },
   "devDependencies": {
     "coffee": "^5.2.2"
