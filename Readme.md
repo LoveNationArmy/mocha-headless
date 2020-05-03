@@ -8,7 +8,7 @@ cli tool to run mocha tests in chrome headless browser
 - Chrome headless
 - Tests run as ES6 modules, `import` works and all Web technologies (anything that works in Chrome)
 - Chai for assertions (`expect` and `assert` are available)
-- Runs a temporary static Web server to serve the tests over `http://` and so bypasses browser limitations that are found on `file:///` urls
+- Runs a temporary static Web server to serve the tests over `https://` and so bypasses browser limitations that are found on `file:///` urls
 
 ## Usage
 

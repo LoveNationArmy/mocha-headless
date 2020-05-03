@@ -6,8 +6,9 @@ const write = fs.writeFileSync
 const unlink = fs.unlinkSync
 const stat = fs.statSync
 const join = require('path').join
-const http = require('http')
 const glob = require('glob').sync
+const https = require('https')
+const keys = require('live-server-https')
 const extatic = require('extatic')
 const MochaChrome = require('mocha-chrome')
 
@@ -46,7 +47,7 @@ write(outFilename, outHtml, 'utf-8')
 const name = 'headless-test'
 const host = `${name}.localhost`
 const port = 7357 // TEST
-const url = `http://${host}:${port}`
+const url = `https://${host}:${port}`
 
 const staticRunnerHandler = extatic({
   root: __dirname,
@@ -61,7 +62,7 @@ const staticTestHandler = extatic({
   showDir: false
 })
 
-const server = http.createServer((req, res) => {
+const server = https.createServer(keys, (req, res) => {
   staticRunnerHandler(req, res, () => {
     staticTestHandler(req, res)
   })
@@ -76,7 +77,7 @@ const serverClose = () => new Promise((resolve, reject) => {
 })
 
 // setup chrome headless
-const client = new MochaChrome({ url })
+const client = new MochaChrome({ url, chromeFlags: ['--ignore-certificate-errors'] })
 
 const runTests = () => new Promise(async (resolve, reject) => {
   client.on('ended', resolve)
