@@ -10,10 +10,21 @@ const glob = require('glob').sync
 const https = require('https')
 const keys = require('live-server-https')
 const extatic = require('extatic')
+const coverage = require('istanbul-middleware')
+const FileWriter = require('istanbul-lib-report/lib/file-writer')
+const istanbulLibReport = require('istanbul-lib-report')
+const istanbulLibCoverage = require('istanbul-lib-coverage')
+const TextReport = require('istanbul-reports/lib/text')
 const MochaChrome = require('mocha-chrome')
+
+let enableCoverage = false
 
 // get filenames from arguments
 let args = process.argv.slice(2)
+if (args.includes('--coverage')) {
+  enableCoverage = true
+  args.splice(args.indexOf('--coverage'), 1)
+}
 let testFilenames
 if (args.length <= 1) {
   let testGlob
@@ -62,10 +73,50 @@ const staticTestHandler = extatic({
   showDir: false
 })
 
-const server = https.createServer(keys, (req, res) => {
-  staticRunnerHandler(req, res, () => {
-    staticTestHandler(req, res)
+let coverageOutput, coverageHandler
+
+if (enableCoverage) {
+  coverage.hookLoader(process.cwd(), { esModules: true })
+  coverageHandler = coverage.createClientHandler(process.cwd(), {
+    matcher: req => (
+      !req.url.includes('mocha.') &&
+      !req.url.includes('chai.js') &&
+      !(stat(join(process.cwd(), req.url)).isDirectory())
+    )
   })
+}
+
+const server = https.createServer(keys, (req, res) => {
+  if (req.url === '/coverage') {
+    let data = ''
+    req.setEncoding('utf8')
+    req.on('data', d => data += d)
+    req.on('end', () => {
+      const coverageData = JSON.parse(data)
+      FileWriter.startCapture()
+      const context = istanbulLibReport.createContext({
+        dir: process.cwd(),
+        coverageMap: istanbulLibCoverage.createCoverageMap(coverageData)
+      })
+      const tree = context.getTree('pkg')
+      const report = new TextReport()
+      tree.visit(report, context)
+      coverageOutput = FileWriter.getOutput()
+      FileWriter.stopCapture()
+    })
+    return
+  }
+  if (enableCoverage) {
+    coverageHandler(req, res, () => {
+      staticRunnerHandler(req, res, () => {
+        staticTestHandler(req, res)
+      })
+    })
+  } else {
+    staticRunnerHandler(req, res, () => {
+      staticTestHandler(req, res)
+    })
+  }
 })
 
 const serverListen = () => new Promise((resolve, reject) => {
@@ -93,6 +144,9 @@ async function main() {
     await runTests()
   } catch (e) {
     console.error(e)
+  }
+  if (enableCoverage) {
+    console.log(coverageOutput)
   }
   await serverClose()
   unlink(outFilename)

@@ -19,6 +19,11 @@
 
     <script type="module">
       mocha.run()
+      after(() => {
+        if (window.__coverage__) {
+          fetch('/coverage', { method: 'POST', body: JSON.stringify(window.__coverage__) })
+        }
+      })
     </script>
   </body>
 </html>
