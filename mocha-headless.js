@@ -137,6 +137,7 @@ const server = https.createServer(keys, (req, res) => {
 
 const serverListen = () => new Promise((resolve, reject) => {
   server.listen(port, host, resolve)
+  server.on('error', () => {})
 })
 
 const serverClose = () => new Promise((resolve, reject) => {
