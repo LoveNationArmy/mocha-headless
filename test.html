@@ -11,6 +11,10 @@
     <div id="mocha"></div>
 
     <script type="module">
+      Object.assign(window, {env})
+    </script>
+
+    <script type="module">
       window.expect = chai.expect
       window.assert = chai.assert
     </script>

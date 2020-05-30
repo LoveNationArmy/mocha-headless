@@ -17,6 +17,15 @@ const istanbulLibCoverage = require('istanbul-lib-coverage')
 const TextReport = require('istanbul-reports/lib/text')
 const MochaChrome = require('mocha-chrome')
 
+let env = {}
+try {
+  const parse = s => { try { return JSON.parse(s) } catch { return s } }
+  env = Object.fromEntries(read(join(process.cwd(), '.env'), 'utf-8')
+    .split(/\r\n|\n/g).filter(Boolean)
+    .map(line => line.split('='))
+    .map(([key, ...value]) => [key, parse(process.env[key] ?? value.join('='))]))
+} catch {}
+
 let enableCoverage = false
 
 // get filenames from arguments
@@ -50,7 +59,9 @@ if (args.length <= 1) {
 const testScriptTags = testFilenames.map((testFilename) =>
   `<script type="module" src="./${testFilename}"></script>`
 ).join('\n')
-const outHtml = read(`${__dirname}/test.html`, 'utf-8').replace('{test}', testScriptTags)
+const outHtml = read(`${__dirname}/test.html`, 'utf-8')
+  .replace('{test}', testScriptTags)
+  .replace('{env}', JSON.stringify(env, null, 2))
 const outFilename = `${__dirname}/index.html`
 write(outFilename, outHtml, 'utf-8')
 
