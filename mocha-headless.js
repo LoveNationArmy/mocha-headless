@@ -27,12 +27,17 @@ try {
 } catch {}
 
 let enableCoverage = false
+let withErrors = false
 
 // get filenames from arguments
 let args = process.argv.slice(2)
 if (args.includes('--coverage')) {
   enableCoverage = true
   args.splice(args.indexOf('--coverage'), 1)
+}
+if (args.includes('--with-errors')) {
+  withErrors = true
+  args.splice(args.indexOf('--with-errors'), 1)
 }
 let testFilenames
 if (args.length <= 1) {
@@ -139,7 +144,18 @@ const serverClose = () => new Promise((resolve, reject) => {
 })
 
 // setup chrome headless
-const client = new MochaChrome({ url, chromeFlags: ['--ignore-certificate-errors'] })
+const client = new MochaChrome({
+  url,
+  ignoreExceptions: !withErrors,
+  ignoreResourceErrors: !withErrors,
+  mocha: { fullTrace: true, color: true },
+  chromeFlags: [
+    '--ignore-certificate-errors',
+    '--allow-insecure-localhost',
+    '--use-fake-device-for-media-stream',
+    '--use-fake-ui-for-media-stream',
+  ]
+})
 
 const runTests = () => new Promise(async (resolve, reject) => {
   client.on('ended', resolve)

@@ -22,6 +22,8 @@
     {test}
 
     <script type="module">
+      mocha.fullTrace(true)
+      mocha.color(true)
       mocha.run()
       after(() => {
         if (window.__coverage__) {
