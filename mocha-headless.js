@@ -28,7 +28,7 @@ try {
 } catch {}
 
 let enableCoverage = false
-let withErrors = false
+let withErrors = true
 
 // get filenames from arguments
 let args = process.argv.slice(2)
