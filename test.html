@@ -17,6 +17,10 @@
     <script type="module">
       window.expect = chai.expect
       window.assert = chai.assert
+      mocha.setup({
+        ui: 'bdd',
+        reporter: 'html'
+      })
     </script>
 
     {test}

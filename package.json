@@ -19,7 +19,7 @@
     "live-server": "^1.2.1",
     "live-server-https": "0.0.2",
     "mocha": "npm:@stagas/mocha@^7.2.0",
-    "mocha-chrome": "^2.2.0"
+    "mocha-chrome": "npm:@stagas/mocha-chrome@^2.2.0"
   },
   "devDependencies": {
     "coffee": "^5.2.2"
