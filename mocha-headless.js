@@ -8,6 +8,7 @@ const stat = fs.statSync
 const join = require('path').join
 const glob = require('glob').sync
 const https = require('https')
+const live = require('live-server')
 const keys = require('live-server-https')
 const extatic = require('extatic')
 const coverage = require('istanbul-middleware')
@@ -17,7 +18,7 @@ const istanbulLibCoverage = require('istanbul-lib-coverage')
 const TextReport = require('istanbul-reports/lib/text')
 const MochaChrome = require('mocha-chrome')
 
-let env = {}
+let env = { WATCH: false }
 try {
   const parse = s => { try { return JSON.parse(s) } catch { return s } }
   env = Object.fromEntries(read(join(process.cwd(), '.env'), 'utf-8')
@@ -35,9 +36,18 @@ if (args.includes('--coverage')) {
   enableCoverage = true
   args.splice(args.indexOf('--coverage'), 1)
 }
-if (args.includes('--with-errors')) {
-  withErrors = true
-  args.splice(args.indexOf('--with-errors'), 1)
+if (args.includes('--quiet')) {
+  withErrors = false
+  args.splice(args.indexOf('--quiet'), 1)
+}
+if (args.includes('--keep-alive')) {
+  console.log('--keep-alive is DEPRECATED!!! use: --watch')
+  env.WATCH = true
+  args.splice(args.indexOf('--keep-alive'), 1)
+}
+if (args.includes('--watch')) {
+  env.WATCH = true
+  args.splice(args.indexOf('--watch'), 1)
 }
 let testFilenames
 if (args.length <= 1) {
@@ -102,38 +112,64 @@ if (enableCoverage) {
   })
 }
 
-const server = https.createServer(keys, (req, res) => {
-  if (req.url === '/coverage') {
-    let data = ''
-    req.setEncoding('utf8')
-    req.on('data', d => data += d)
-    req.on('end', () => {
-      const coverageData = JSON.parse(data)
-      FileWriter.startCapture()
-      const context = istanbulLibReport.createContext({
-        dir: process.cwd(),
-        coverageMap: istanbulLibCoverage.createCoverageMap(coverageData)
+let server
+
+if (!env.WATCH) {
+  server = https.createServer(keys, (req, res) => {
+    if (req.url === '/coverage') {
+      let data = ''
+      req.setEncoding('utf8')
+      req.on('data', d => data += d)
+      req.on('end', () => {
+        const coverageData = JSON.parse(data)
+        FileWriter.startCapture()
+        const context = istanbulLibReport.createContext({
+          dir: process.cwd(),
+          coverageMap: istanbulLibCoverage.createCoverageMap(coverageData)
+        })
+        const tree = context.getTree('pkg')
+        const report = new TextReport()
+        tree.visit(report, context)
+        coverageOutput = FileWriter.getOutput()
+        FileWriter.stopCapture()
       })
-      const tree = context.getTree('pkg')
-      const report = new TextReport()
-      tree.visit(report, context)
-      coverageOutput = FileWriter.getOutput()
-      FileWriter.stopCapture()
-    })
-    return
-  }
-  if (enableCoverage) {
-    coverageHandler(req, res, () => {
+      return
+    }
+    if (enableCoverage) {
+      coverageHandler(req, res, () => {
+        staticRunnerHandler(req, res, () => {
+          staticTestHandler(req, res)
+        })
+      })
+    } else {
       staticRunnerHandler(req, res, () => {
         staticTestHandler(req, res)
       })
-    })
-  } else {
-    staticRunnerHandler(req, res, () => {
-      staticTestHandler(req, res)
-    })
+    }
+  })
+} else {
+  let _server
+  server = {
+    listen (port, host, resolve) {
+      _server = live.start({
+        https: keys,
+        port,
+        host,
+        open: false,
+        file: __dirname + '/index.html',
+        root: __dirname,
+        mount: [['/', process.cwd()]],
+        watch: [process.cwd()],
+      })
+      _server.once('listening', resolve)
+      return _server
+    },
+    on () {},
+    close (resolve) {
+      _server.close(resolve)
+    }
   }
-})
+}
 
 const serverListen = () => new Promise((resolve, reject) => {
   server.listen(port, host, resolve)
@@ -168,6 +204,11 @@ const runTests = () => new Promise(async (resolve, reject) => {
 // run the tests
 async function main() {
   await serverListen()
+  if (env.WATCH) {
+    client.exit = () => {
+      console.log(`test server: https://${host}:${port}/`)
+    }
+  }
   try {
     await runTests()
   } catch (e) {
@@ -176,8 +217,10 @@ async function main() {
   if (enableCoverage) {
     console.log(coverageOutput)
   }
-  await serverClose()
-  unlink(outFilename)
+  if (!env.WATCH) {
+    await serverClose()
+    unlink(outFilename)
+  }
 }
 
 main()
