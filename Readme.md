@@ -41,12 +41,20 @@ Simply add `--coverage` to the cli arguments.
 $ mocha-headless test/unit --coverage
 ```
 
-## --with-errors
+## --watch
 
-Adding `--with-errors` will also display exceptions and resource errors in the output.
+Adding `--watch` will start using a [live-server](https://www.npmjs.com/package/live-server), and keep the server alive. Any time you save you get an automatic refresh of the tests.
 
 ```sh
-$ mocha-headless test/integration --with-errors
+$ mocha-headless --watch
+```
+
+## --quiet
+
+Adding `--quiet` will suppress exceptions and resource errors in the output.
+
+```sh
+$ mocha-headless test/integration --quiet
 ```
 
 This is useful in integration tests when browser API calls are being made because these don't always generate "catchable" errors for mocha to use, so they are hidden, but otherwise make the console output really messy and they're not necessarily errors in our code - just browser quirks and warnings.

@@ -1,6 +1,6 @@
 {
   "name": "mocha-headless",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "cli tool to run mocha tests in chrome headless browser",
   "bin": "mocha-headless.js",
   "scripts": {
