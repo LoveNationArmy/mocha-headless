@@ -191,6 +191,7 @@ const client = new MochaChrome({
     '--allow-insecure-localhost',
     '--use-fake-device-for-media-stream',
     '--use-fake-ui-for-media-stream',
+    '--autoplay-policy=no-user-gesture-required',
   ]
 })
 
