@@ -33,6 +33,18 @@ let fullTrace = false
 
 // get filenames from arguments
 let args = process.argv.slice(2)
+if (args.includes('--help') || args.includes('-h')) {
+  console.log(`
+usage: mocha-headless [path] [options]
+
+options:
+  --coverage  Run coverage (slow)
+  --quiet     More quiet (ignore exceptions)
+  --watch     Watch files and repeat tests on save
+  --trace     Enable full stack traces
+`)
+  return process.exit(0)
+}
 if (args.includes('--coverage')) {
   enableCoverage = true
   args.splice(args.indexOf('--coverage'), 1)
