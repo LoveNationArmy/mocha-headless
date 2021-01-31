@@ -29,6 +29,7 @@ try {
 
 let enableCoverage = false
 let withErrors = true
+let fullTrace = false
 
 // get filenames from arguments
 let args = process.argv.slice(2)
@@ -48,6 +49,10 @@ if (args.includes('--keep-alive')) {
 if (args.includes('--watch')) {
   env.WATCH = true
   args.splice(args.indexOf('--watch'), 1)
+}
+if (args.includes('--trace')) {
+  fullTrace = true
+  args.splice(args.indexOf('--trace'), 1)
 }
 let testFilenames
 if (args.length <= 1) {
@@ -185,7 +190,7 @@ const client = new MochaChrome({
   url,
   ignoreExceptions: !withErrors,
   ignoreResourceErrors: !withErrors,
-  mocha: { fullTrace: true, color: true },
+  mocha: { fullTrace, color: true },
   chromeFlags: [
     '--ignore-certificate-errors',
     '--allow-insecure-localhost',
