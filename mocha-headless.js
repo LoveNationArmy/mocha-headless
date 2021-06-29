@@ -176,7 +176,7 @@ if (!env.WATCH) {
         file: __dirname + '/index.html',
         root: __dirname,
         mount: [['/', process.cwd()]],
-        watch: [process.cwd()],
+        watch: [process.cwd() + '/**/*.{js,wasm}'],
       })
       _server.once('listening', resolve)
       return _server
@@ -188,12 +188,12 @@ if (!env.WATCH) {
   }
 }
 
-const serverListen = () => new Promise((resolve, reject) => {
+const serverListen = () => new Promise((resolve) => {
   server.listen(port, host, resolve)
   server.on('error', () => {})
 })
 
-const serverClose = () => new Promise((resolve, reject) => {
+const serverClose = () => new Promise((resolve) => {
   server.close(resolve)
 })
 
