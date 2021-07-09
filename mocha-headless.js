@@ -94,14 +94,14 @@ const testScriptTags = testFilenames.map((testFilename) =>
 const outHtml = read(`${__dirname}/test.html`, 'utf-8')
   .replace('{test}', testScriptTags)
   .replace('{env}', JSON.stringify(env, null, 2))
-const outFilename = `${__dirname}/index.html`
+const outFilename = `${__dirname}/main.html`
 write(outFilename, outHtml, 'utf-8')
 
 // setup http server
 const name = 'headless-test'
 const host = `${name}.localhost`
 const port = 7357 // TEST
-const url = `https://${host}:${port}`
+const url = `https://${host}:${port}/main.html`
 
 const staticRunnerHandler = extatic({
   root: __dirname,
@@ -173,7 +173,7 @@ if (!env.WATCH) {
         port,
         host,
         open: false,
-        file: __dirname + '/index.html',
+        file: __dirname + '/main.html',
         root: __dirname,
         mount: [['/', process.cwd()]],
         watch: [process.cwd() + '/**/*.{js,wasm}'],
@@ -224,7 +224,7 @@ async function main() {
   await serverListen()
   if (env.WATCH) {
     client.exit = () => {
-      console.log(`test server: https://${host}:${port}/`)
+      console.log(`test server: https://${host}:${port}/main.html`)
     }
   }
   try {
